@@ -50,3 +50,20 @@ Darshan and Gagan update their prompts and get better AI results.
 4. **Saves Time** – Helps both writers and editors speed up their workflow.
 
 This tool acts like a **writing coach** for Markdown files and AI prompts, ensuring clarity before content reaches developers, AI models, or end users.
+
+
+
+##Markdown file checking tools##
+| Tool Name       | Type        | Description                                   | Link             |
+|-----------------|-------------|-----------------------------------------------|------------------|
+| Hunspell        | Word Level  | Checks spelling in Markdown files             | [Hunspell](https://hunspell.github.io/) |
+| Grammarly       | Phrase Level| Checks grammar and suggests corrections       | [Grammarly](https://www.grammarly.com/)  |
+| MarkdownLint    | Phrase Level| Finds formatting errors in Markdown files     | [MarkdownLint](https://github.com/DavidAnson/markdownlint) |
+| Hemingway Editor| Reader Level| Checks readability and suggests improvements | [Hemingway Editor](https://hemingwayapp.com/) |
+| Vale            | Reader Level| Customizable tool for style and clarity checks| [Vale](https://vale.sh/) |
+
+
+
+
+
+
