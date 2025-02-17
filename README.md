@@ -51,7 +51,25 @@ Darshan and Gagan update their prompts and get better AI results.
 
 This tool acts like a **writing coach** for Markdown files and AI prompts, ensuring clarity before content reaches developers, AI models, or end users.
 
+### Survey of Markdown Checking Tools  
 
+There are several tools available to check and improve Markdown files. Below is a classification:  
+
+#### 1. Word Level (Spelling Checkers)  
+- *[Typos](https://github.com/crate-ci/typos)* – Detects spelling mistakes in code and markdown.  
+- *[Hunspell](https://hunspell.github.io/)* – A popular spell checker used in LibreOffice.  
+
+#### 2. Phrase Level (Grammar & Hyperlink Checkers)  
+- *[Vale](https://vale.sh/)* – A customizable style and grammar checker.  
+- *[markdown-link-check](https://github.com/tcort/markdown-link-check)* – Detects broken links in Markdown files.  
+
+#### 3. Reader Level (Clarity, Readability, Rephrasers)  
+- *[WriteGood](https://github.com/btford/write-good)* – Detects weak writing (e.g., passive voice, weasel words).  
+- *[Hemingway Editor](http://www.hemingwayapp.com/)* – Measures readability and suggests improvements.  
+
+*Motivation for this Survey:*  
+- Avoid reinventing the wheel.  
+- Objectively evaluate our tool when it runs.
 
 
 
