@@ -70,6 +70,15 @@ There are several tools available to check and improve Markdown files. Below is 
 *Motivation for this Survey:*  
 - Avoid reinventing the wheel.  
 - Objectively evaluate our tool when it runs.
+## Acceptance Criteria
+
+The program should:
+✅ Take user input (a prompt).  
+✅ Identify weak words like **"sometimes"**, **"might"**, or vague phrases like **"Explain this topic"**.  
+✅ Provide a better version of the prompt.  
+✅ Handle cases where the input does not match the given patterns.  
+✅ Ensure that empty input is not accepted.
+
 
 
 
