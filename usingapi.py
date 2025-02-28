@@ -1,7 +1,7 @@
 import requests
 
 API_URL = "https://api-inference.huggingface.co/models/gpt2"
-HEADERS = {"Authorization": f"Bearer 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"}
+HEADERS = {"Authorization": f"Bearer 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"}
 
 def query_huggingface(prompt):
     data = {"inputs": prompt}
