@@ -2,7 +2,7 @@ import requests
 
 # Hugging Face API details
 API_URL = "https://api-inference.huggingface.co/models/gpt2"
-HEADERS = {"Authorization": "Bearer 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"}  #api ket
+HEADERS = {"Authorization": "Bearer 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"}  #api ket
 
 def query_huggingface(prompt):
     """Sends prompt to Hugging Face API and returns the response."""
