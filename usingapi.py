@@ -3,7 +3,7 @@ import requests  # Helps us talk to the internet
 from dotenv import load_dotenv  # Helps us read the secret file
 
 # Load the .env file
-load_dotenv()
+load_.env()
 
 # Get API key from the hidden .env file
 API_KEY = os.getenv("HUGGINGFACE_API_KEY")
