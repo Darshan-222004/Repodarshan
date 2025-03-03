@@ -3,10 +3,11 @@ import requests  # Helps us talk to the internet
 from dotenv import load_dotenv  # Helps us read the secret file
 
 # Load the .env file
-load_.env()
+load_dotenv()  # Fixed the incorrect function call
 
 # Get API key from the hidden .env file
 API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+
 API_URL = "https://api-inference.huggingface.co/models/gpt2"
 
 # Check if API key is loaded
@@ -19,9 +20,15 @@ HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 def query_huggingface(prompt):
     data = {"inputs": prompt}
     response = requests.post(API_URL, headers=HEADERS, json=data)
-    return response.json()
+    
+    try:
+        result = response.json()
+    except requests.exceptions.JSONDecodeError:
+        return {"error": "Failed to parse response from API."}
+    
+    return result
 
-if _name_ == "_main_":
+if __name__ == "__main__":  # Fixed '__name__' syntax
     user_input = input("Enter a prompt: ")
     result = query_huggingface(user_input)
 
