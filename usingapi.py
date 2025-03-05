@@ -6,7 +6,7 @@ from dotenv import load_dotenv  # Helps us read the secret file
 load_dotenv()  # Fixed the incorrect function call
 
 # Get API key from the hidden .env file
-API_KEY = os.getenv("huggingface")
+API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
 API_URL = "https://api-inference.huggingface.co/models/gpt2"
 
