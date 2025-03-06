@@ -15,14 +15,17 @@ genai.configure(api_key=API_KEY)
 # Choose the correct model
 model = genai.GenerativeModel("gemini-1.5-pro-latest")
 
-# Function to generate text
+# Function to generate text from user input
 def generate_text(prompt, num_sentences=50):
     response = model.generate_content(f"{prompt}\nWrite {num_sentences} sentences.")
     return response.text if response else "No response received."
 
-# Example prompt
-user_prompt = "Describe the impact of artificial intelligence on daily life."
+# Take user input for the prompt
+user_prompt = input("Enter your prompt: ")
 
-# Generate 50 sentences
+# Generate text based on user input
 output_text = generate_text(user_prompt)
+
+# Print the output
+print("\nGenerated Text:\n")
 print(output_text)
