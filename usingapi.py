@@ -1,29 +1,35 @@
 import os
 import google.generativeai as genai
-from dotenv import load_dotenv  # Import dotenv to load environment variables
+from dotenv import load_dotenv  # Securely load API key
 
-# Load the .env file
+# Load API key from .env file
 load_dotenv()
-
-# Get the API key from environment variables
 API_KEY = os.getenv("GOOGLE_API_KEY")
 
-# Check if API key is loaded correctly
+# Ensure API key is available
 if not API_KEY:
     raise ValueError("API key is missing. Please set it in the .env file.")
 
-# Configure Gemini API with the loaded key
+# Configure Gemini AI
 genai.configure(api_key=API_KEY)
 
-# List available models
-models = genai.list_models()
-
-# Print the available models (to debug and check what you can use)
-for model in models:
-    print(model.name)
-
-# Use a supported model (change based on available models)
+# Choose a valid Gemini model
 model = genai.GenerativeModel("gemini-1.0-pro")
 
-response = model.generate_content("Hello, how are you?")
-print(response.text)
+def generate_text(prompt, num_sentences=50):
+    """Generates text with the specified number of sentences."""
+    full_prompt = f"{prompt}\n\nPlease generate {num_sentences} sentences."
+    
+    try:
+        response = model.generate_content(full_prompt)
+        return response.text
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# Get user input and generate text
+user_prompt = input("Enter a prompt: ")
+generated_text = generate_text(user_prompt)
+
+# Display result
+print("\nGenerated Text:\n")
+print(generated_text)
