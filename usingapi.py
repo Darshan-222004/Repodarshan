@@ -1,31 +1,29 @@
-import os  # Helps us work with files
-import requests  # Helps us talk to the internet
-from dotenv import load_dotenv  # Helps us read the secret file
-import google.generativeai as genai  # Import Gemini SDK
+import os
+import google.generativeai as genai
+from dotenv import load_dotenv  # Import dotenv to load environment variables
 
 # Load the .env file
 load_dotenv()
 
-# Get API key from the hidden .env file
-API_KEY = os.getenv("GEMINI_API_KEY")
+# Get the API key from environment variables
+API_KEY = os.getenv("GOOGLE_API_KEY")
 
-# Check if API key is loaded
+# Check if API key is loaded correctly
 if not API_KEY:
     raise ValueError("API key is missing. Please set it in the .env file.")
 
-# Configure Google Gemini API
+# Configure Gemini API with the loaded key
 genai.configure(api_key=API_KEY)
 
-# Function to query Gemini API
-def query_gemini(prompt):
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(prompt)
+# List available models
+models = genai.list_models()
 
-    return response.text if response else "Error: No response from Gemini API."
+# Print the available models (to debug and check what you can use)
+for model in models:
+    print(model.name)
 
-if __name__ == "__main__":
-    user_input = input("Enter a prompt: ")
-    result = query_gemini(user_input)
-    
-    print("\nGenerated Text:\n")
-    print(result)
+# Use a supported model (change based on available models)
+model = genai.GenerativeModel("gemini-1.0-pro")
+
+response = model.generate_content("Hello, how are you?")
+print(response.text)
