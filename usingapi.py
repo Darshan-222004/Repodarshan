@@ -15,31 +15,23 @@ genai.configure(api_key=API_KEY)
 # Choose the correct model
 model = genai.GenerativeModel("gemini-1.5-pro-latest")
 
-# Function to generate text from user input with improved prompt
-def generate_text(prompt):
+# Function to refine the prompt
+def refine_prompt(prompt):
     refined_prompt = (
-        f"Based on the following input, generate a well-structured, detailed, and engaging response:\n\n"
-        f"---\n"
-        f"User Input: {prompt}\n\n"
-        f"### Requirements:\n"
-        f"- Provide a clear and coherent response.\n"
-        f"- Maintain an engaging and informative tone.\n"
-        f"- Structure the content logically with well-defined sections.\n"
-        f"- If answering a question, give thorough explanations with examples.\n"
-        f"- If responding to an instruction, ensure precision and depth.\n"
-        f"---"
+        f"Improve the following statement into a more natural, well-specified, and purpose-driven prompt:\n\n"
+        f"Original: \"{prompt}\"\n"
+        f"Improved (concise and clear):"
     )
     
     response = model.generate_content(refined_prompt)
-    return response.text if response else "No response received."
+    return response.text.strip() if response else "No refined prompt generated."
 
 # Take user input for the prompt
 user_prompt = input("Enter your prompt: ")
 
-# Generate text based on user input
-output_text = generate_text(user_prompt)
+# Generate refined prompt
+improved_prompt = refine_prompt(user_prompt)
 
-# Print the output
-print("\nGenerated Text:\n")
-print(output_text)
-
+# Print the improved prompt
+print("\nRefined Prompt:\n")
+print(improved_prompt)
