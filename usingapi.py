@@ -18,9 +18,10 @@ model = genai.GenerativeModel("gemini-1.5-pro-latest")
 # Function to refine the prompt
 def refine_prompt(prompt):
     refined_prompt = (
-        f"Improve the following statement into a more natural, well-specified, and purpose-driven prompt:\n\n"
+        f"Enhance the following statement into a well-structured, specific, and purpose-driven question.\n"
+        f"Ensure the improved prompt clarifies the intent and includes relevant details like comparison factors or key aspects:\n\n"
         f"Original: \"{prompt}\"\n"
-        f"Improved (concise and clear):"
+        f"Improved (specific and well-defined):"
     )
     
     response = model.generate_content(refined_prompt)
