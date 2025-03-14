@@ -3,13 +3,13 @@ import os
 from dotenv import load_dotenv
 
 def load_api_key():
-    load_dotenv()
+    load_dotenv("2.env")  # Load API key from 2.env file
     return os.getenv("OPENAI_API_KEY")
 
 def optimize_prompt(prompt):
     api_key = load_api_key()
     if not api_key:
-        raise ValueError("OpenAI API key not found. Please check your .env file.")
+        raise ValueError("OpenAI API key not found. Please check your 2.env file.")
     
     openai.api_key = api_key
     
@@ -34,4 +34,3 @@ if __name__ == "__main__":
     user_prompt = input("Enter a short prompt (1-4 lines) to optimize: ")
     optimized_prompt = optimize_prompt(user_prompt)
     print("\nOptimized Prompt:\n", optimized_prompt)
-
