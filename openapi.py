@@ -14,20 +14,20 @@ def optimize_prompt(prompt):
     client = openai.OpenAI(api_key=api_key)  # Initialize OpenAI client
 
     system_instruction = (
-        "You refine user prompts by making them more precise, naturally worded, and aligned with a clear purpose. "
-        "Ensure that the optimized prompt conveys the same idea effectively with better structure and clarity."
+        "Refine and enhance user prompts by improving specificity, clarity, and natural language fluency. "
+        "Ensure the optimized prompt maintains the original intent but is more precise, actionable, and structured effectively."
     )
 
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": system_instruction},
-            {"role": "user", "content": f"Improve this prompt while keeping it concise and effective:\n\n{prompt}"}
+            {"role": "user", "content": f"Make this prompt more specific, well-structured, and natural:\n\n{prompt}"}
         ],
-        temperature=0.7
+        temperature=0.5  # Lower temperature for more precise responses
     )
 
-    return response.choices[0].message.content  # Extract improved prompt
+    return response.choices[0].message.content.strip()  # Extract and clean output
 
 if __name__ == "__main__":
     user_prompt = input("Enter a short prompt (1-4 lines) to optimize: ")
