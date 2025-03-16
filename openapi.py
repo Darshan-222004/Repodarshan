@@ -9,7 +9,8 @@ API_KEY = os.getenv("OPENAI_API_KEY")
 if not API_KEY:
     raise ValueError("Missing API key! Check your .env file.")
 
-openai.api_key = API_KEY  # Set OpenAI API key
+# Initialize OpenAI client with new API format
+client = openai.OpenAI(api_key=API_KEY)
 
 def refine_prompt(prompt):
     """Refines a vague input into a well-structured, specific, and natural-sounding prompt."""
@@ -22,8 +23,8 @@ def refine_prompt(prompt):
         "Improved:"
     )
     
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
+    response = client.chat.completions.create(
+        model="gpt-4-turbo",
         messages=[
             {"role": "system", "content": "You refine user prompts for clarity, specificity, and completeness."},
             {"role": "user", "content": instruction}
@@ -32,7 +33,7 @@ def refine_prompt(prompt):
     )
 
     # Extract the refined prompt
-    refined_text = response["choices"][0]["message"]["content"].strip()
+    refined_text = response.choices[0].message.content.strip()
 
     # Ensure it is properly formatted with double quotes
     for line in refined_text.split("\n"):
