@@ -2,49 +2,34 @@ import openai
 import os
 from dotenv import load_dotenv
 
-# Load API key from .env file
-load_dotenv()
-API_KEY = os.getenv("OPENAI_API_KEY")
+def load_api_key():
+    load_dotenv(".env")  # Load API key from .env file
+    return os.getenv("OPENAI_API_KEY")
 
-if not API_KEY:
-    raise ValueError("Missing API key! Check your .env file.")
-
-# Initialize OpenAI client with new API format
-client = openai.OpenAI(api_key=API_KEY)
-
-def refine_prompt(prompt):
-    """Refines a vague input into a well-structured, specific, and natural-sounding prompt."""
+def optimize_prompt(prompt):
+    api_key = load_api_key()
+    if not api_key:
+        raise ValueError("OpenAI API key not found. Please check your .env file.")
     
-    instruction = (
-        "Transform the given statement into a well-structured, specific, and natural-sounding prompt. "
-        "Ensure it is between 1 to 4 lines, framed as an effective question or instruction. "
-        "Focus on clarity, key details, and natural language refinement. The response must be enclosed in double quotes (\"\").\n\n"
-        f"Original: \"{prompt}\"\n"
-        "Improved:"
+    client = openai.OpenAI(api_key=api_key)  # Initialize OpenAI client
+
+    system_instruction = (
+        "Improve the given prompt by making it clearer, more specific, and well-structured. "
+        "Ensure it is framed as an effective and natural-sounding question, considering key aspects relevant to the topic."
     )
-    
+
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-4",
         messages=[
-            {"role": "system", "content": "You refine user prompts for clarity, specificity, and completeness."},
-            {"role": "user", "content": instruction}
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": f"Rewrite this prompt to be clearer, more specific, and well-structured:\n\n{prompt}"}
         ],
-        temperature=0.7
+        temperature=0.5  # Lower temperature for more controlled outputs
     )
 
-    # Extract the refined prompt
-    refined_text = response.choices[0].message.content.strip()
-
-    # Ensure it is properly formatted with double quotes
-    for line in refined_text.split("\n"):
-        if line.startswith('"') and line.endswith('"'):
-            return line.strip()  # Return the first valid quoted line
-
-    return '"No refined prompt generated."'  # Fallback case
+    return response.choices[0].message.content.strip()  # Extract and clean output
 
 if __name__ == "__main__":
-    user_prompt = input("Enter your prompt: ").strip()
-    improved_prompt = refine_prompt(user_prompt)
-    
-    print("\n🔹 Refined Prompt:\n")
-    print(improved_prompt)
+    user_prompt = input("Enter a short prompt (1-4 lines) to optimize: ")
+    optimized_prompt = optimize_prompt(user_prompt)
+    print("\nOptimized Prompt:\n", optimized_prompt)
