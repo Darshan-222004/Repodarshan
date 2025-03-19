@@ -34,8 +34,8 @@ def split_into_sections(markdown_text: str):
 
     return structured_sections
 
-async def analyze_and_fix_section(heading: str, content: str) -> str:
-    """Analyzes and improves a README section only if needed."""
+async def analyze_and_fix_section(heading: str, content: str) -> tuple:
+    """Analyzes and improves a README section only if needed. Returns (is_changed, improved_content)."""
     system_msg = "You are an expert in reviewing README files, improving clarity, and making them more purposeful."
 
     user_instruction = (
@@ -58,10 +58,13 @@ async def analyze_and_fix_section(heading: str, content: str) -> str:
 
         improved_content = response.choices[0].message.content.strip()
 
-        return improved_content if improved_content != "NO_CHANGE" else content
+        if improved_content == "NO_CHANGE":
+            return False, content  # No changes made
+        else:
+            return True, improved_content  # Section was improved
 
     except openai.OpenAIError as e:
-        return f"❌ API Error: {str(e)}"
+        return False, f"❌ API Error: {str(e)}"
 
 async def main():
     markdown_file = "README.md"  # Change this to your actual README file
@@ -74,11 +77,20 @@ async def main():
             print("🚨 No sections found in the README.md file.")
             return
 
-        print("\n📌 **Improved README:**\n")
-
         improved_sections = []
+        changes_made = False
+
+        print("\n📌 **Changes in README:**\n")
+
         for heading, content in sections:
-            improved_content = await analyze_and_fix_section(heading, content)
+            is_changed, improved_content = await analyze_and_fix_section(heading, content)
+
+            if is_changed:
+                changes_made = True
+                print(f"🔹 **{heading}**")
+                print("❌ Original:\n", content)
+                print("\n✅ Improved:\n", improved_content)
+                print("-" * 80)
 
             improved_sections.append(f"{heading}\n\n{improved_content}")
 
@@ -87,7 +99,10 @@ async def main():
         with open("README_improved.md", "w", encoding="utf-8") as file:
             file.write(improved_markdown)
 
-        print("✅ README improvements saved to README_improved.md")
+        if changes_made:
+            print("\n✅ README improvements saved to README_improved.md")
+        else:
+            print("\n✅ No changes were necessary. README is already well-structured.")
 
     except Exception as e:
         print(f"❌ Error: {str(e)}")
