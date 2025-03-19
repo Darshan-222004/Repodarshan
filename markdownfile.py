@@ -34,16 +34,16 @@ def split_into_sections(markdown_text: str):
 
     return structured_sections
 
-async def analyze_section(heading: str, content: str) -> str:
-    """Analyzes a README section for purposefulness and clarity."""
-    system_msg = "You are an expert in reviewing README files to improve their clarity, purposefulness, and effectiveness."
+async def analyze_and_fix_section(heading: str, content: str) -> str:
+    """Analyzes and improves a README section only if needed."""
+    system_msg = "You are an expert in reviewing README files, improving clarity, and making them more purposeful."
 
     user_instruction = (
-        "Analyze the following README section and provide constructive feedback. "
-        "Focus on how well it conveys its purpose, whether it's clear and structured, and suggest improvements. "
-        "Feedback should be in bullet points. If the section is already strong, mention that as well.\n\n"
+        "Analyze the following README section:\n\n"
         f"### {heading}\n{content}\n\n"
-        "### Feedback:"
+        "- If the section is **clear, structured, and serves its purpose**, reply with: `NO_CHANGE`.\n"
+        "- If the section is **unclear, too vague, or lacks purpose**, improve it naturally without changing its intent.\n\n"
+        "**Improved Section:**"
     )
 
     try:
@@ -56,7 +56,9 @@ async def analyze_section(heading: str, content: str) -> str:
             temperature=0.5
         )
 
-        return response.choices[0].message.content.strip()
+        improved_content = response.choices[0].message.content.strip()
+
+        return improved_content if improved_content != "NO_CHANGE" else content
 
     except openai.OpenAIError as e:
         return f"❌ API Error: {str(e)}"
@@ -72,18 +74,23 @@ async def main():
             print("🚨 No sections found in the README.md file.")
             return
 
-        print("\n📌 **README Analysis Report:**\n")
+        print("\n📌 **Improved README:**\n")
 
+        improved_sections = []
         for heading, content in sections:
-            feedback = await analyze_section(heading, content)
+            improved_content = await analyze_and_fix_section(heading, content)
 
-            print(f"🔹 **{heading}**")
-            print(feedback)
-            print("-" * 60)
+            improved_sections.append(f"{heading}\n\n{improved_content}")
+
+        improved_markdown = "\n\n".join(improved_sections)
+
+        with open("README_improved.md", "w", encoding="utf-8") as file:
+            file.write(improved_markdown)
+
+        print("✅ README improvements saved to README_improved.md")
 
     except Exception as e:
         print(f"❌ Error: {str(e)}")
 
 if __name__ == "__main__":
     asyncio.run(main())
-
