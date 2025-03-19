@@ -2,6 +2,7 @@ import asyncio
 import openai
 import os
 import re
+import difflib
 from dotenv import load_dotenv
 
 # Load API key from .env file
@@ -66,6 +67,19 @@ async def analyze_and_fix_section(heading: str, content: str) -> tuple:
     except openai.OpenAIError as e:
         return False, f"❌ API Error: {str(e)}"
 
+def show_diff(original: str, improved: str):
+    """Highlights only changed lines between original and improved content."""
+    diff = difflib.ndiff(original.splitlines(), improved.splitlines())
+    changes = [line for line in diff if line.startswith("- ") or line.startswith("+ ")]
+
+    if changes:
+        print("\n🔍 **Changes in this section:**")
+        for line in changes:
+            if line.startswith("- "):
+                print(f"❌ {line[2:]}")
+            elif line.startswith("+ "):
+                print(f"✅ {line[2:]}")
+
 async def main():
     markdown_file = "README.md"  # Change this to your actual README file
     
@@ -88,8 +102,7 @@ async def main():
             if is_changed:
                 changes_made = True
                 print(f"🔹 **{heading}**")
-                print("❌ Original:\n", content)
-                print("\n✅ Improved:\n", improved_content)
+                show_diff(content, improved_content)
                 print("-" * 80)
 
             improved_sections.append(f"{heading}\n\n{improved_content}")
