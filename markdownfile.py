@@ -22,13 +22,13 @@ def fetch_markdown_content(md_path):
         return file.read()
 
 def call_openai_api(prompt):
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    response = openai.ChatCompletion.create(
+    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
         model="gpt-4",  # Adjust model as needed
         messages=[{"role": "system", "content": "You are a professional technical writer."},
                   {"role": "user", "content": prompt}]
     )
-    return response["choices"][0]["message"]["content"]
+    return response.choices[0].message.content
 
 def clone_and_create_branch(repo_url, branch_name):
     repo_name = repo_url.split("/")[-1].replace(".git", "")
@@ -66,6 +66,6 @@ def main(md_path, purpose, repo_url, branch_name="markdown-improvements"):
 if __name__ == "__main__":
     md_path = "README.md"  # Path to your markdown file in repo
     purpose = "Prompts should be in natural language, very specific, and purpose clear"
-    repo_url = "git@github.com:yourusername/yourrepo.git"  # Use SSH instead of HTTPS
+    repo_url = "https://github.com/Darshan-222004/Repodarshan.git"  # Updated repo URL
     
     main(md_path, purpose, repo_url)
