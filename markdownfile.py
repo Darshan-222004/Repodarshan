@@ -1,131 +1,71 @@
-import asyncio
-import openai
 import os
-import re
-import difflib
+import openai
+import git
+import shutil
 from dotenv import load_dotenv
 
-# Load API key from .env file
+# Load environment variables
 load_dotenv()
-API_KEY = os.getenv("OPENAI_API_KEY")
 
-if not API_KEY:
-    raise ValueError("❌ Missing API key! Check your .env file.")
+def generate_prompt(md_content, purpose):
+    return f"""
+    The following Markdown document was written for this purpose: {purpose}
+    Improve its clarity, conciseness, and readability while preserving the original intent.
+    Ensure the prompts are in natural language, highly specific, and clearly state their purpose.
+    Maintain proper formatting, grammar, and logical flow.
+    Here is the content:
+    {md_content}
+    """
 
-# Initialize OpenAI client
-client = openai.AsyncOpenAI(api_key=API_KEY)
+def fetch_markdown_content(md_path):
+    with open(md_path, "r", encoding="utf-8") as file:
+        return file.read()
 
-def read_markdown_file(file_path: str) -> str:
-    """Reads the entire content of a Markdown file."""
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"❌ File not found: {file_path}")
-
-    with open(file_path, "r", encoding="utf-8") as file:
-        return file.read().strip()
-
-def split_into_sections(markdown_text: str):
-    """Splits the markdown file into sections based on headings."""
-    sections = re.split(r"(#+ .*)", markdown_text)  # Split on markdown headings
-    structured_sections = []
-
-    for i in range(1, len(sections), 2):  # Process heading-content pairs
-        heading = sections[i].strip()
-        content = sections[i + 1].strip() if i + 1 < len(sections) else ""
-        structured_sections.append((heading, content))
-
-    return structured_sections
-
-async def analyze_and_fix_section(heading: str, content: str) -> tuple:
-    """Analyzes and improves a README section only if needed. Returns (is_changed, improved_content)."""
-    system_msg = "You are an expert in reviewing README files, improving clarity, and making them more purposeful."
-
-    user_instruction = (
-        "Analyze the following README section:\n\n"
-        f"### {heading}\n{content}\n\n"
-        "- If the section is **clear, structured, and serves its purpose**, reply with: `NO_CHANGE`.\n"
-        "- If the section is **unclear, too vague, or lacks purpose**, improve it naturally without changing its intent.\n\n"
-        "**Improved Section:**"
+def call_openai_api(prompt):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    response = openai.ChatCompletion.create(
+        model="gpt-4",  # Adjust model as needed
+        messages=[{"role": "system", "content": "You are a professional technical writer."},
+                  {"role": "user", "content": prompt}]
     )
+    return response["choices"][0]["message"]["content"]
 
-    try:
-        response = await client.chat.completions.create(
-            model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": system_msg},
-                {"role": "user", "content": user_instruction}
-            ],
-            temperature=0.5
-        )
-
-        improved_content = response.choices[0].message.content.strip()
-
-        if improved_content == "NO_CHANGE":
-            return False, content  # No changes made
-        else:
-            return True, improved_content  # Section was improved
-
-    except openai.OpenAIError as e:
-        return False, f"❌ API Error: {str(e)}"
-
-def show_diff(original: str, improved: str):
-    """Highlights only changed lines between original and improved content."""
-    diff = difflib.ndiff(original.splitlines(), improved.splitlines())
-    changes = [line for line in diff if line.startswith("- ") or line.startswith("+ ")]
-
-    if changes:
-        print("\n🔍 **Changes in this section:**")
-        for line in changes:
-            if line.startswith("- "):
-                print(f"❌ {line[2:]}")
-            elif line.startswith("+ "):
-                print(f"✅ {line[2:]}")
-
-async def main():
-    markdown_file = "README.md"  # Change this to your actual README file
+def clone_and_create_branch(repo_url, branch_name):
+    repo_name = repo_url.split("/")[-1].replace(".git", "")
+    clone_dir = f"./{repo_name}_clone"
     
-    try:
-        markdown_text = read_markdown_file(markdown_file)
-        sections = split_into_sections(markdown_text)
+    if os.path.exists(clone_dir):
+        shutil.rmtree(clone_dir)
+    
+    repo = git.Repo.clone_from(repo_url, clone_dir)
+    new_branch = repo.create_head(branch_name)
+    new_branch.checkout()
+    return repo, clone_dir
 
-        if not sections:
-            print("🚨 No sections found in the README.md file.")
-            return
+def commit_and_push_changes(repo, clone_dir, md_path, new_content, branch_name):
+    md_full_path = os.path.join(clone_dir, md_path)
+    with open(md_full_path, "w", encoding="utf-8") as file:
+        file.write(new_content)
+    
+    repo.git.add(md_path)
+    repo.git.commit(m=f"Improve {md_path} clarity and readability")
+    
+    print("Changes committed. Please push manually using:")
+    print(f"cd {clone_dir} && git push origin {branch_name}")
 
-        improved_sections = []
-        changed_sections = []
-        changes_made = False
+def main(md_path, purpose, repo_url, branch_name="markdown-improvements"):
+    md_content = fetch_markdown_content(md_path)
+    prompt = generate_prompt(md_content, purpose)
+    improved_md = call_openai_api(prompt)
+    
+    repo, clone_dir = clone_and_create_branch(repo_url, branch_name)
+    commit_and_push_changes(repo, clone_dir, md_path, improved_md, branch_name)
+    print("Now manually push the branch and create a pull request on GitHub.")
 
-        print("\n📌 **Changes in README:**\n")
-
-        for heading, content in sections:
-            is_changed, improved_content = await analyze_and_fix_section(heading, content)
-
-            if is_changed:
-                changes_made = True
-                print(f"🔹 **{heading}**")
-                show_diff(content, improved_content)
-                print("-" * 80)
-                changed_sections.append(f"{heading}\n\n{improved_content}")
-
-            improved_sections.append(f"{heading}\n\n{improved_content}")
-
-        # Save full improved README
-        with open("README_improved.md", "w", encoding="utf-8") as file:
-            file.write("\n\n".join(improved_sections))
-
-        # Save only changed sections
-        if changed_sections:
-            with open("README_changes_only.md", "w", encoding="utf-8") as file:
-                file.write("\n\n".join(changed_sections))
-            print("\n✅ Changes-only README saved as README_changes_only.md")
-        
-        if changes_made:
-            print("\n✅ Full improved README saved as README_improved.md")
-        else:
-            print("\n✅ No changes were necessary. README is already well-structured.")
-
-    except Exception as e:
-        print(f"❌ Error: {str(e)}")
-
+# Example Usage
 if __name__ == "__main__":
-    asyncio.run(main())
+    md_path = "README.md"  # Path to your markdown file in repo
+    purpose = "Prompts should be in natural language, very specific, and purpose clear"
+    repo_url = "git@github.com:yourusername/yourrepo.git"  # Use SSH instead of HTTPS
+    
+    main(md_path, purpose, repo_url)
