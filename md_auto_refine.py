@@ -7,11 +7,12 @@ from dotenv import load_dotenv
 def load_env():
     load_dotenv(".env")
     openai_api_key = os.getenv("OPENAI_API_KEY")
-    load_dotenv("2.env")
     github_token = os.getenv("GITHUB_TOKEN")
+    if not openai_api_key or not github_token:
+        raise ValueError("Missing required environment variables")
     return openai_api_key, github_token
 
-def refine_markdown(md_content):
+def refine_markdown(md_content, openai_api_key):
     prompt = f"""
     Convert the following Markdown content to be:
     1. Clear in purpose
@@ -24,7 +25,7 @@ def refine_markdown(md_content):
     Refined version:
     """
     
-    client = openai.OpenAI(api_key=openai.api_key)
+    client = openai.OpenAI(api_key=openai_api_key)
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "system", "content": "You are a helpful assistant."},
@@ -44,13 +45,25 @@ def clone_repo(repo_url, local_dir):
         return None
 
 def create_branch(repo, branch_name):
-    existing_branches = [b.name for b in repo.branches]
-    if branch_name in existing_branches:
-        print(f"Branch '{branch_name}' already exists. Checking out to it.")
-        repo.git.checkout(branch_name)
-    else:
-        print(f"Creating new branch: {branch_name}")
-        repo.git.checkout('-b', branch_name)
+    """Create and checkout a new branch if it doesn't exist."""
+    try:
+        # Check if branch exists locally
+        if branch_name in [b.name for b in repo.branches]:
+            print(f"Branch '{branch_name}' exists. Checking out...")
+            repo.git.checkout(branch_name)
+        else:
+            # Check if branch exists remotely
+            remote_branches = [ref.name.split('/')[-1] for ref in repo.remote().refs]
+            if branch_name in remote_branches:
+                print(f"Branch '{branch_name}' exists remotely. Creating tracking branch...")
+                repo.git.checkout('-b', branch_name, f'origin/{branch_name}')
+                repo.git.pull('origin', branch_name)
+            else:
+                print(f"Creating new branch: {branch_name}")
+                repo.git.checkout('-b', branch_name)
+    except git.exc.GitCommandError as e:
+        print(f"Error handling branch: {e}")
+        raise
 
 def update_markdown_file(repo, file_path, refined_content):
     if not os.path.exists(file_path):
@@ -89,36 +102,38 @@ def main():
     repo_url = "https://github.com/Darshan-222004/Repodarshan.git"
     md_file_path = "README.md"
     
-    openai_api_key, github_token = load_env()
-    openai.api_key = openai_api_key
-    
-    repo_name = repo_url.split("/")[-1].replace(".git", "")
-    local_dir = os.path.join(os.getcwd(), repo_name)
-    repo = clone_repo(repo_url, local_dir)
-    
-    if repo is None:
-        print("Error: Could not clone the repository.")
-        return
-    
-    full_md_path = os.path.join(local_dir, md_file_path)
-    
-    if not os.path.exists(full_md_path):
-        print(f"Error: Markdown file '{md_file_path}' not found in the repository.")
-        return
-    
-    with open(full_md_path, "r", encoding="utf-8") as f:
-        md_content = f.read()
-    
-    refined_content = refine_markdown(md_content)
-    
-    branch_name = "markdown-refinement"
-    create_branch(repo, branch_name)
-    
-    if update_markdown_file(repo, full_md_path, refined_content):
-        commit_and_push(repo, branch_name, "Refined Markdown content")
+    try:
+        openai_api_key, github_token = load_env()
         
-        repo_owner = repo_url.split("/")[-2]
-        create_pull_request(repo_owner, repo_name, branch_name, github_token)
+        repo_name = repo_url.split("/")[-1].replace(".git", "")
+        local_dir = os.path.join(os.getcwd(), repo_name)
+        repo = clone_repo(repo_url, local_dir)
+        
+        if repo is None:
+            print("Error: Could not clone the repository.")
+            return
+        
+        full_md_path = os.path.join(local_dir, md_file_path)
+        
+        if not os.path.exists(full_md_path):
+            print(f"Error: Markdown file '{md_file_path}' not found in the repository.")
+            return
+        
+        with open(full_md_path, "r", encoding="utf-8") as f:
+            md_content = f.read()
+        
+        refined_content = refine_markdown(md_content, openai_api_key)
+        
+        branch_name = "markdown-refinement"
+        create_branch(repo, branch_name)
+        
+        if update_markdown_file(repo, full_md_path, refined_content):
+            commit_and_push(repo, branch_name, "Refined Markdown content")
+            
+            repo_owner = repo_url.split("/")[-2]
+            create_pull_request(repo_owner, repo_name, branch_name, github_token)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
