@@ -1,3 +1,4 @@
+
 import os
 import openai
 import git
@@ -5,12 +6,23 @@ import requests
 from dotenv import load_dotenv
 
 def load_env():
-    if not os.path.exists(".env"):
+    openai_env = ".env"
+    github_env = "2.env"
+    
+    if not os.path.exists(github_env):
+        raise FileNotFoundError("2.env file not found")
+    if not os.path.exists(openai_env):
         raise FileNotFoundError(".env file not found")
     
-    load_dotenv(".env")
+    load_dotenv(github_env)
+    load_dotenv(openai_env)
+    
     openai_api_key = os.getenv("OPENAI_API_KEY")
     github_token = os.getenv("GITHUB_TOKEN")
+    
+    # Debugging
+    print(f"Loaded OPENAI_API_KEY: {openai_api_key is not None}")
+    print(f"Loaded GITHUB_TOKEN: {github_token is not None}")
     
     if not openai_api_key:
         raise ValueError("Missing OPENAI_API_KEY environment variable")
@@ -53,16 +65,12 @@ def clone_repo(repo_url, local_dir):
 
 def create_branch(repo, branch_name):
     try:
-        # Get list of local branches
         local_branches = [b.name for b in repo.branches]
-
-        # Check if the branch exists locally
         if branch_name in local_branches:
             print(f"Branch '{branch_name}' already exists. Checking out...")
             repo.git.checkout(branch_name)
             return
         
-        # Check if the branch exists remotely
         remote_branches = [ref.name.split('/')[-1] for ref in repo.remote().refs]
         if branch_name in remote_branches:
             print(f"Branch '{branch_name}' exists remotely. Creating a local tracking branch.")
@@ -70,10 +78,8 @@ def create_branch(repo, branch_name):
             repo.git.pull('origin', branch_name)
             return
         
-        # Create a new branch if it doesn't exist locally or remotely
         print(f"Creating new branch '{branch_name}' and switching to it.")
         repo.git.checkout('-b', branch_name)
-    
     except git.exc.GitCommandError as e:
         print(f"Error handling branch: {e}")
         raise
