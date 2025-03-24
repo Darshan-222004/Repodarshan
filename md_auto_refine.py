@@ -5,11 +5,18 @@ import requests
 from dotenv import load_dotenv
 
 def load_env():
+    if not os.path.exists(".env"):
+        raise FileNotFoundError(".env file not found")
+    
     load_dotenv(".env")
     openai_api_key = os.getenv("OPENAI_API_KEY")
     github_token = os.getenv("GITHUB_TOKEN")
-    if not openai_api_key or not github_token:
-        raise ValueError("Missing required environment variables")
+    
+    if not openai_api_key:
+        raise ValueError("Missing OPENAI_API_KEY environment variable")
+    if not github_token:
+        raise ValueError("Missing GITHUB_TOKEN environment variable")
+    
     return openai_api_key, github_token
 
 def refine_markdown(md_content, openai_api_key):
@@ -70,7 +77,6 @@ def create_branch(repo, branch_name):
     except git.exc.GitCommandError as e:
         print(f"Error handling branch: {e}")
         raise
-
 
 def update_markdown_file(repo, file_path, refined_content):
     if not os.path.exists(file_path):
