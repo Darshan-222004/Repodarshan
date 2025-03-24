@@ -24,12 +24,13 @@ def refine_markdown(md_content):
     Refined version:
     """
     
-    response = openai.ChatCompletion.create(
+    client = openai.OpenAI(api_key=openai.api_key)
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "system", "content": "You are a helpful assistant."},
                   {"role": "user", "content": prompt}]
     )
-    return response["choices"][0]["message"]["content"].strip()
+    return response.choices[0].message.content.strip()
 
 def clone_repo(repo_url, local_dir):
     if os.path.exists(local_dir):
