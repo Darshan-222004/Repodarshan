@@ -45,25 +45,32 @@ def clone_repo(repo_url, local_dir):
         return None
 
 def create_branch(repo, branch_name):
-    """Create and checkout a new branch if it doesn't exist."""
     try:
-        # Check if branch exists locally
-        if branch_name in [b.name for b in repo.branches]:
-            print(f"Branch '{branch_name}' exists. Checking out...")
+        # Get list of local branches
+        local_branches = [b.name for b in repo.branches]
+
+        # Check if the branch exists locally
+        if branch_name in local_branches:
+            print(f"Branch '{branch_name}' already exists. Checking out...")
             repo.git.checkout(branch_name)
-        else:
-            # Check if branch exists remotely
-            remote_branches = [ref.name.split('/')[-1] for ref in repo.remote().refs]
-            if branch_name in remote_branches:
-                print(f"Branch '{branch_name}' exists remotely. Creating tracking branch...")
-                repo.git.checkout('-b', branch_name, f'origin/{branch_name}')
-                repo.git.pull('origin', branch_name)
-            else:
-                print(f"Creating new branch: {branch_name}")
-                repo.git.checkout('-b', branch_name)
+            return
+        
+        # Check if the branch exists remotely
+        remote_branches = [ref.name.split('/')[-1] for ref in repo.remote().refs]
+        if branch_name in remote_branches:
+            print(f"Branch '{branch_name}' exists remotely. Creating a local tracking branch.")
+            repo.git.checkout('-b', branch_name, f'origin/{branch_name}')
+            repo.git.pull('origin', branch_name)
+            return
+        
+        # Create a new branch if it doesn't exist locally or remotely
+        print(f"Creating new branch '{branch_name}' and switching to it.")
+        repo.git.checkout('-b', branch_name)
+    
     except git.exc.GitCommandError as e:
         print(f"Error handling branch: {e}")
         raise
+
 
 def update_markdown_file(repo, file_path, refined_content):
     if not os.path.exists(file_path):
