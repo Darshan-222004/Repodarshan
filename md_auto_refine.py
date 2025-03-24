@@ -1,28 +1,19 @@
-
 import os
 import openai
 import git
 import requests
+import logging
 from dotenv import load_dotenv
 
+def setup_logging():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 def load_env():
-    openai_env = ".env"
-    github_env = "2.env"
-    
-    if not os.path.exists(github_env):
-        raise FileNotFoundError("2.env file not found")
-    if not os.path.exists(openai_env):
-        raise FileNotFoundError(".env file not found")
-    
-    load_dotenv(github_env)
-    load_dotenv(openai_env)
+    load_dotenv(".env")
+    load_dotenv("2.env")
     
     openai_api_key = os.getenv("OPENAI_API_KEY")
     github_token = os.getenv("GITHUB_TOKEN")
-    
-    # Debugging
-    print(f"Loaded OPENAI_API_KEY: {openai_api_key is not None}")
-    print(f"Loaded GITHUB_TOKEN: {github_token is not None}")
     
     if not openai_api_key:
         raise ValueError("Missing OPENAI_API_KEY environment variable")
@@ -44,49 +35,51 @@ def refine_markdown(md_content, openai_api_key):
     Refined version:
     """
     
-    client = openai.OpenAI(api_key=openai_api_key)
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "system", "content": "You are a helpful assistant."},
-                  {"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content.strip()
+    try:
+        client = openai.OpenAI(api_key=openai_api_key)
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "system", "content": "You are a helpful assistant."},
+                      {"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logging.error(f"Error in OpenAI API call: {e}")
+        return md_content  # Return original content on failure
 
 def clone_repo(repo_url, local_dir):
     if os.path.exists(local_dir):
-        print("Repository already cloned.")
+        logging.info("Repository already cloned.")
         return git.Repo(local_dir)
     try:
-        print(f"Cloning repository from {repo_url} to {local_dir}...")
+        logging.info(f"Cloning repository from {repo_url} to {local_dir}...")
         return git.Repo.clone_from(repo_url, local_dir)
     except Exception as e:
-        print(f"Error cloning repo: {e}")
+        logging.error(f"Error cloning repo: {e}")
         return None
 
 def create_branch(repo, branch_name):
     try:
-        local_branches = [b.name for b in repo.branches]
-        if branch_name in local_branches:
-            print(f"Branch '{branch_name}' already exists. Checking out...")
+        if branch_name in [b.name for b in repo.branches]:
+            logging.info(f"Branch '{branch_name}' already exists. Checking out...")
             repo.git.checkout(branch_name)
             return
         
-        remote_branches = [ref.name.split('/')[-1] for ref in repo.remote().refs]
-        if branch_name in remote_branches:
-            print(f"Branch '{branch_name}' exists remotely. Creating a local tracking branch.")
+        if branch_name in [ref.name.split('/')[-1] for ref in repo.remote().refs]:
+            logging.info(f"Branch '{branch_name}' exists remotely. Creating a local tracking branch.")
             repo.git.checkout('-b', branch_name, f'origin/{branch_name}')
             repo.git.pull('origin', branch_name)
             return
         
-        print(f"Creating new branch '{branch_name}' and switching to it.")
+        logging.info(f"Creating new branch '{branch_name}' and switching to it.")
         repo.git.checkout('-b', branch_name)
     except git.exc.GitCommandError as e:
-        print(f"Error handling branch: {e}")
+        logging.error(f"Error handling branch: {e}")
         raise
 
 def update_markdown_file(repo, file_path, refined_content):
     if not os.path.exists(file_path):
-        print(f"Error: Markdown file '{file_path}' does not exist.")
+        logging.error(f"Error: Markdown file '{file_path}' does not exist.")
         return False
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(refined_content)
@@ -95,12 +88,15 @@ def update_markdown_file(repo, file_path, refined_content):
 
 def commit_and_push(repo, branch_name, commit_message):
     try:
+        if not repo.is_dirty():
+            logging.info("No changes to commit.")
+            return
         repo.git.commit('-m', commit_message)
         origin = repo.remote(name='origin')
         origin.push(branch_name)
-        print(f"Changes pushed to branch '{branch_name}'")
+        logging.info(f"Changes pushed to branch '{branch_name}'")
     except Exception as e:
-        print(f"Error during commit/push: {e}")
+        logging.error(f"Error during commit/push: {e}")
 
 def create_pull_request(repo_owner, repo_name, branch_name, github_token):
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/pulls"
@@ -111,13 +107,17 @@ def create_pull_request(repo_owner, repo_name, branch_name, github_token):
         "base": "main",
         "body": "This PR improves the markdown file for clarity, specificity, and natural language."
     }
-    response = requests.post(url, json=data, headers=headers)
-    if response.status_code == 201:
-        print("Pull Request Created:", response.json().get("html_url"))
-    else:
-        print("Failed to create Pull Request:", response.json())
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code == 201:
+            logging.info("Pull Request Created: " + response.json().get("html_url"))
+        else:
+            logging.error("Failed to create Pull Request: " + str(response.json()))
+    except Exception as e:
+        logging.error(f"Error creating pull request: {e}")
 
 def main():
+    setup_logging()
     repo_url = "https://github.com/Darshan-222004/Repodarshan.git"
     md_file_path = "README.md"
     
@@ -129,13 +129,13 @@ def main():
         repo = clone_repo(repo_url, local_dir)
         
         if repo is None:
-            print("Error: Could not clone the repository.")
+            logging.error("Error: Could not clone the repository.")
             return
         
         full_md_path = os.path.join(local_dir, md_file_path)
         
         if not os.path.exists(full_md_path):
-            print(f"Error: Markdown file '{md_file_path}' not found in the repository.")
+            logging.error(f"Error: Markdown file '{md_file_path}' not found in the repository.")
             return
         
         with open(full_md_path, "r", encoding="utf-8") as f:
@@ -152,7 +152,7 @@ def main():
             repo_owner = repo_url.split("/")[-2]
             create_pull_request(repo_owner, repo_name, branch_name, github_token)
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
