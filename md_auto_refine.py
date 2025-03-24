@@ -36,7 +36,12 @@ def clone_repo(repo_url, local_dir):
     if os.path.exists(local_dir):
         print("Repository already cloned.")
         return git.Repo(local_dir)
-    return git.Repo.clone_from(repo_url, local_dir)
+    try:
+        print(f"Cloning repository from {repo_url} to {local_dir}...")
+        return git.Repo.clone_from(repo_url, local_dir)
+    except Exception as e:
+        print(f"Error cloning repo: {e}")
+        return None
 
 def create_branch(repo, branch_name):
     repo.git.checkout('-b', branch_name)
