@@ -1,64 +1,64 @@
-# Objective
+# Goal
 
-We aim to optimize the use of markdown files as commonly used in GitHub for documentation purposes. Unlike HTML syntax, markdown utilizes its unique syntax, such as `#`, `##`, `###` for headings instead of `<h1>`, `<h2>`, `<h3>`. Markdown files can incorporate various forms of media including images, video links, and other text entries. For a satisfactory user experience, it is crucial to have clearly framed prompts to guide AI towards generating appropriate responses. The tool we're proposing will ensure these prompts are clear, concise and directly to the point.
+Our goal is to enhance the use of Markdown files, commonly employed on GitHub for documentation needs. Markdown has a unique syntax compared to HTML, using characters such as `#`, `##`, `###` for headings rather than `<h1>`, `<h2>`, `<h3>`. Markdown files encompass a range of media types including images, videos, and text. To provide a superior user experience, we trust upon carefully crafted prompts to guide AI in generating suitable responses. Our proposed tool will guarantee these prompts are clear, concise, and meaningful.
 
-## Detailed Requirements for Optimizing Markdown Files
+## Specific Criteria for Perfecting Markdown Files
 
-The proposed tool should be able to:
+The tool we recommend should be capable of:
 
-1. Transform passive voice to active voice. For example, it should convert "The decision was made by the team" to "The team made the decision."
-2. Identify and remove redundant and incomplete sentences.
-3. Eliminate the usage of first-person opinions. For instance, "I believe this tool is helpful" should be modified to "This tool aids in enhancing writing clarity".
-4. Improve the clarity of AI prompting.
-5. Detect ambiguous or open-ended prompts and suggest more specific variants. For example, a vague request like "Tell me about this product" should be narrowed down to "Summarize the key features and benefits of this product in two sentences."
+1. Converting passive voice to active voice. For example, it should change "The decision was made by the team" to "The team made the decision."
+2. Recognizing and deleting unnecessary and incomplete sentences.
+3. Avoiding first-person subjective views. For example, "I believe this tool is helpful" should be altered to "This tool aids in enhancing writing clarity".
+4. Boosting the transparency of AI prompts.
+5. Pinpointing ambiguous or broad prompts and recommend more specific alternatives. For instance, a vague query like "Tell me about this product" should be refined to "Summarize the key features and benefits of this product in two sentences."
 
-## Potential Users of This Tool
+## Anticipated Users of Our Tool
 
-This tool will be beneficial for:
+The tool will prove advantageous for:
 
-1. **Students** – needing clear documentation and AI prompts for their projects.
-2. **Content Creators & Editors** – employing the tool to ensure the clarity of software instructions and AI-generated content.
-3. **Project Managers** – to maintain organized, professional project documentation.
-4. **AI Engineers & Prompt Designers** – developing lucid, well-structured prompts that garner precise AI-generated responses.
+1. **Students** – who require precise documentation and AI prompts for their projects.
+2. **Content Creators & Editors** – who can utilize the tool to assure clarity in software guidelines and AI-generated content.
+3. **Project Managers** – aiming for systematic, professional project documentation.
+4. **AI Engineers & Prompt Designers** – working on developing clear and properly structured prompts that evoke precise AI responses.
 
-## Method of Usage
+## Usage Method
 
-To apply this tool:
+To use this tool:
 
-1. Users enter their text or prompt into the designated interface.
-2. The tool scrutinizes the text for weak areas such as passive voice, vague statements, unclear prompts, and usage of weasel words.
-3. The tool then produces an optimized version of the text with suggested improvements.
-4. An advanced AI can also be employed to trawl through the Markdown file, identify errors, and automatically implement corrections.
+1. Users input their text or prompt into the specified interface.
+2. The tool reviews the text for potential weaknesses such as passive voice, imprecise statements, unclear prompts, and weasel word usage.
+3. The tool then provides a polished version of the text with suggestions for improvements.
+4. An advanced AI can further be utilized to comb through the Markdown file, spot errors, and automatically apply corrections.
 
-## Practical Applications
+## Real-world Applications
 
-Consider the following scenarios:
+Take into account the below scenarios:
 
-If Darshan types in his AI prompt guide that "Sometimes, users might want a summary, so you could try to generate one", our tool will detect "sometimes" and "might" as uncertain words. The tool would then suggest a more robust command, such as "If the user requests a summary, produce a succinct one."
+If Darshan submits an AI prompt guide that states "Sometimes, users might want a summary, so you could try to generate one", our tool will recognize "sometimes" and "might" as indicative of uncertainty. The tool would then recommend a stronger directive, such as "If the user requests a summary, produce a brief one."
 
-Another example: if Gagan creates a vague AI prompt like "Explain this topic", the tool would recommend a more descriptive prompt such as "Summarize the main aspects of this topic in less than 100 words." These refined prompts would facilitate more accurate AI responses.
+Another example: if Gagan inputs a generic AI prompt like "Explain this topic", the tool would suggest a more exact prompt like "Summarize the main points of this topic in under 100 words." These tweaked prompts would enable more accurate AI outcomes.
 
-## Key Benefits
+## Primary Advantages
 
-The tool offers:
+This tool extends:
 
-1. Enhanced clarity, by transforming statements like "Some users might find this feature useful" to become "Beginner users will find this feature helpful".
-2. Improved professionalism, ensuring all documentation and AI prompts maintain formality and are easily understood.
-3. More effective AI prompts, leading to more relevant and accurate AI responses.
-4. Time-saving capabilities, boosting the productivity of writers and editors alike.
+1. Increased clarity, by rephrasing statements like "Some users might find this feature useful" to become "Beginner users will find this feature helpful".
+2. Greater professionalism, guaranteeing all documentation and AI prompts maintain formality and are effortlessly understood.
+3. More targeted AI prompts, resulting in more pertinent and accurate AI outputs.
+4. Time-efficiency, thereby enhancing the productivity of writers and editors.
 
-In essence, our tool operates as a writing coach, streamlining the clarity, accuracy, and user-friendliness of markdown files and AI prompts.
+In short, our tool functions as a writing mentor, augmenting the clarity, correctness, and user-friendliness of markdown files and AI prompts.
 
-## Existing Markdown Checking Tools  
+## Markdown Checking Tools Currently Available
 
-Several tools are currently available for checking and improving Markdown files, including spelling checkers like [Typos](https://github.com/crate-ci/typos) and [Hunspell](https://hunspell.github.io/), grammar checkers like [Vale](https://vale.sh/) and [markdown-link-check](https://github.com/tcort/markdown-link-check), and clarity and readability analyzers like [WriteGood](https://github.com/btford/write-good) and [Hemingway Editor](http://www.hemingwayapp.com/). These exist to avoid duplicating efforts and to gauge our tool's effectiveness.
+Several tools already exist to check and refine Markdown files including spellcheck tools like [Typos](https://github.com/crate-ci/typos) and [Hunspell](https://hunspell.github.io/), grammar verification like [Vale](https://vale.sh/) and [markdown-link-check](https://github.com/tcort/markdown-link-check), and clarity and readability assessment like [WriteGood](https://github.com/btford/write-good) and [Hemingway Editor](http://www.hemingwayapp.com/). We mention these to avoid replication of efforts and to evaluate the effectiveness of our tool.
 
-## Expected Capabilities 
+## Required Functionalities
 
-To be considered effective, the tool should be able to:
+For our tool to be deemed effective, it should be able to:
 
-✅ Accept a user's input (a prompt).  
-✅ Spot and highlight weak words or vague phrases.  
-✅ Provide an improved version of the prompt.  
-✅ Handle instances when the input does not align with typical patterns.  
-✅ Disallow submission of empty input.
+✅ Receive a user's input (a prompt).  
+✅ Identify and highlight weak words or ambiguous phrases.  
+✅ Propose an improved version of the prompt.  
+✅ Manage instances when the input does not follow typical patterns.  
+✅ Prevent submission of empty input.
