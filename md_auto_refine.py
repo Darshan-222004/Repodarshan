@@ -69,7 +69,9 @@ def refine_markdown(md_content, openai_api_key):
         messages=[{"role": "system", "content": "You are a helpful assistant."},
                   {"role": "user", "content": prompt}]
     )
-    return response.choices[0].message.content.strip()
+    refined_content = response.choices[0].message.content.strip()
+    print("AI Response:\n", refined_content)  # Debugging
+    return refined_content
 
 def update_markdown_file(repo, file_path, refined_content):
     if not file_path.endswith("README.md"):
@@ -78,17 +80,33 @@ def update_markdown_file(repo, file_path, refined_content):
     if not os.path.exists(file_path):
         print(f"Error: Markdown file '{file_path}' does not exist.")
         return False
+    
+    with open(file_path, "r", encoding="utf-8") as f:
+        original_content = f.read()
+    print("Original README.md Content:\n", original_content)  # Debugging
+
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(refined_content)
+    
+    with open(file_path, "r", encoding="utf-8") as f:
+        updated_content = f.read()
+    print("Updated README.md Content:\n", updated_content)  # Debugging
+
     repo.git.add(file_path)
     return True
 
 def commit_and_push(repo, branch_name, commit_message):
     try:
+        if not repo.is_dirty(untracked_files=True):
+            print("No changes detected in the repository. Skipping commit.")
+            return
+
         repo.git.commit('-m', commit_message)
         origin = repo.remote(name='origin')
         origin.push(branch_name)
-        print(f"Changes pushed to branch '{branch_name}'")
+        print(f"Changes successfully pushed to '{branch_name}'")
+
+        print("Last Commit:\n", repo.git.log("-1"))
     except Exception as e:
         print(f"Error during commit/push: {e}")
 
@@ -133,7 +151,7 @@ if __name__ == "__main__":
         
         refined_content = refine_markdown(md_content, openai_api_key)
         
-        branch_name = "markdown-refinement"
+        branch_name = "md_refine_2"
         create_branch(repo, branch_name)
         
         if update_markdown_file(repo, full_md_path, refined_content):
@@ -143,3 +161,4 @@ if __name__ == "__main__":
             create_pull_request(repo_owner, repo_name, branch_name, github_token)
     except Exception as e:
         print(f"An error occurred: {e}")
+
