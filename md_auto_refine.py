@@ -7,16 +7,20 @@ from dotenv import load_dotenv
 def load_env():
     if not os.path.exists(".env"):
         raise FileNotFoundError(".env file not found")
+    if not os.path.exists("2.env"):
+        raise FileNotFoundError("2.env file not found")
     
-    load_dotenv(".env")
+    load_dotenv(".env")  # Load OpenAI key
+    load_dotenv("2.env")  # Load GitHub token
+
     openai_api_key = os.getenv("OPENAI_API_KEY")
     github_token = os.getenv("GITHUB_TOKEN")
-    
+
     if not openai_api_key:
         raise ValueError("Missing OPENAI_API_KEY environment variable")
     if not github_token:
         raise ValueError("Missing GITHUB_TOKEN environment variable")
-    
+
     return openai_api_key, github_token
 
 def clone_repo(repo_url, local_dir):
