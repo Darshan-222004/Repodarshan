@@ -3,9 +3,14 @@ import openai
 import git
 import requests
 from dotenv import load_dotenv
-from clone import clone_repo
-from md_refine import refine_markdown
-from puller import create_branch, update_markdown_file, commit_and_push, create_pull_request
+
+# Ensure Python can find the repo_utils module
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "repo_utils"))
+
+from repo_utils.clone import clone_repo
+from repo_utils.md_refine import refine_markdown
+from repo_utils.puller import create_branch, update_markdown_file, commit_and_push, create_pull_request
 
 def load_env():
     openai_env = ".env"
