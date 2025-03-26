@@ -133,7 +133,7 @@ if __name__ == "__main__":
         
         refined_content = refine_markdown(md_content, openai_api_key)
         
-        branch_name = "markdown-refinement"
+        branch_name = "md_refine_2"
         create_branch(repo, branch_name)
         
         if update_markdown_file(repo, full_md_path, refined_content):
