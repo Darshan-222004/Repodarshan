@@ -1,90 +1,64 @@
-# Problem Statement
-A Markdown file is a text file used in GitHub for documentation. It is similar to HTML but does not use HTML syntax. Instead, it has its own formatting rules—for example, HTML uses `<h1>`, `<h2>`, and `<h3>` for headers, while Markdown uses `#`, `##`, and `###`.
+# Objective
 
-Markdown files can display images, write text, create paragraphs, and include links, videos, and other media. Good prompts help AI give better answers. If a prompt is unclear, the AI might give a bad response. This tool fixes prompts by making them clear and direct.
+We aim to optimize the use of markdown files as commonly used in GitHub for documentation purposes. Unlike HTML syntax, markdown utilizes its unique syntax, such as `#`, `##`, `###` for headings instead of `<h1>`, `<h2>`, `<h3>`. Markdown files can incorporate various forms of media including images, video links, and other text entries. For a satisfactory user experience, it is crucial to have clearly framed prompts to guide AI towards generating appropriate responses. The tool we're proposing will ensure these prompts are clear, concise and directly to the point.
 
-## To Optimize Markdown Files Using AI Tools, the Tool Should Be Able to Do the Following:
-1. **Convert passive voice to active voice**  
-   **Example:** "The decision was made by the team." → "The team made the decision."
-2. **Remove unnecessary and incomplete sentences**
-3. **Eliminate first-person opinions**  
-   **Example:** "I believe this tool is helpful." → "This tool helps improve writing clarity."
-4. **Enhance AI Prompting Clarity**
-5. **Detect vague or open-ended prompts and suggest more precise versions**  
-   **Example:** "Tell me about this product." → "Summarize the key features and benefits of this product in two sentences."
+## Detailed Requirements for Optimizing Markdown Files
 
-## Who Will Use This Tool?
-1. **Students** – Working on projects that require clear documentation and AI prompts.
-2. **Content Creators & Editors** – Ensuring that software instructions and AI-generated content are clear.
-3. **Project Managers** – Keeping project documentation structured and professional.
-4. **AI Engineers & Prompt Designers** – Crafting well-structured prompts to get accurate AI-generated responses.
+The proposed tool should be able to:
 
-## How Will They Use It?
-1. Users paste or type their text or prompt into the tool’s interface.
-2. The tool scans the text for issues such as passive voice, vague statements, unclear prompts, and weasel words.
-3. The tool provides optimized text with suggested improvements.
-4. Alternatively, an advanced AI can layer over the Markdown file, detect errors, and apply corrections automatically.
+1. Transform passive voice to active voice. For example, it should convert "The decision was made by the team" to "The team made the decision."
+2. Identify and remove redundant and incomplete sentences.
+3. Eliminate the usage of first-person opinions. For instance, "I believe this tool is helpful" should be modified to "This tool aids in enhancing writing clarity".
+4. Improve the clarity of AI prompting.
+5. Detect ambiguous or open-ended prompts and suggest more specific variants. For example, a vague request like "Tell me about this product" should be narrowed down to "Summarize the key features and benefits of this product in two sentences."
 
-## Example Use Cases
-### **Use Case 1**
-Darshan writes this in his AI prompt guide:
-> "Sometimes, users might want a summary, so you could try to generate one."
+## Potential Users of This Tool
 
-The tool flags *"sometimes"* and *"might"* as weasel words and suggests:
-> "If the user asks for a summary, generate a concise one."
+This tool will be beneficial for:
 
-### **Use Case 2**
-Gagan writes a vague AI prompt:
-> "Explain this topic."
+1. **Students** – needing clear documentation and AI prompts for their projects.
+2. **Content Creators & Editors** – employing the tool to ensure the clarity of software instructions and AI-generated content.
+3. **Project Managers** – to maintain organized, professional project documentation.
+4. **AI Engineers & Prompt Designers** – developing lucid, well-structured prompts that garner precise AI-generated responses.
 
-The tool suggests a more precise prompt:
-> "Summarize the main points of this topic in under 100 words."
+## Method of Usage
 
-Darshan and Gagan update their prompts and get better AI results.
+To apply this tool:
 
-## Benefits
-1. **Provides Clarity** –  
-   **Example:** "Some users might find this feature useful." → "Beginner users will find this feature helpful."
-2. **Improves Professionalism** – Ensures documentation and AI prompts are formal and easy to understand.
-3. **Optimizes AI Prompts** – Helps generate more relevant and precise AI responses.
-4. **Saves Time** – Helps both writers and editors speed up their workflow.
+1. Users enter their text or prompt into the designated interface.
+2. The tool scrutinizes the text for weak areas such as passive voice, vague statements, unclear prompts, and usage of weasel words.
+3. The tool then produces an optimized version of the text with suggested improvements.
+4. An advanced AI can also be employed to trawl through the Markdown file, identify errors, and automatically implement corrections.
 
-This tool acts like a **writing coach** for Markdown files and AI prompts, ensuring clarity before content reaches developers, AI models, or end users.
+## Practical Applications
 
-### Survey of Markdown Checking Tools  
+Consider the following scenarios:
 
-There are several tools available to check and improve Markdown files. Below is a classification:  
+If Darshan types in his AI prompt guide that "Sometimes, users might want a summary, so you could try to generate one", our tool will detect "sometimes" and "might" as uncertain words. The tool would then suggest a more robust command, such as "If the user requests a summary, produce a succinct one."
 
-#### 1. Word Level (Spelling Checkers)  
-- *[Typos](https://github.com/crate-ci/typos)* – Detects spelling mistakes in code and markdown.  
-- *[Hunspell](https://hunspell.github.io/)* – A popular spell checker used in LibreOffice.  
+Another example: if Gagan creates a vague AI prompt like "Explain this topic", the tool would recommend a more descriptive prompt such as "Summarize the main aspects of this topic in less than 100 words." These refined prompts would facilitate more accurate AI responses.
 
-#### 2. Phrase Level (Grammar & Hyperlink Checkers)  
-- *[Vale](https://vale.sh/)* – A customizable style and grammar checker.  
-- *[markdown-link-check](https://github.com/tcort/markdown-link-check)* – Detects broken links in Markdown files.  
+## Key Benefits
 
-#### 3. Reader Level (Clarity, Readability, Rephrasers)  
-- *[WriteGood](https://github.com/btford/write-good)* – Detects weak writing (e.g., passive voice, weasel words).  
-- *[Hemingway Editor](http://www.hemingwayapp.com/)* – Measures readability and suggests improvements.  
+The tool offers:
 
-*Motivation for this Survey:*  
-- Avoid reinventing the wheel.  
-- Objectively evaluate our tool when it runs.
-## Acceptance Criteria
+1. Enhanced clarity, by transforming statements like "Some users might find this feature useful" to become "Beginner users will find this feature helpful".
+2. Improved professionalism, ensuring all documentation and AI prompts maintain formality and are easily understood.
+3. More effective AI prompts, leading to more relevant and accurate AI responses.
+4. Time-saving capabilities, boosting the productivity of writers and editors alike.
 
-The program should:
-✅ Take user input (a prompt).  
-✅ Identify weak words like **"sometimes"**, **"might"**, or vague phrases like **"Explain this topic"**.  
-✅ Provide a better version of the prompt.  
-✅ Handle cases where the input does not match the given patterns.  
-✅ Ensure that empty input is not accepted.
+In essence, our tool operates as a writing coach, streamlining the clarity, accuracy, and user-friendliness of markdown files and AI prompts.
 
+## Existing Markdown Checking Tools  
 
+Several tools are currently available for checking and improving Markdown files, including spelling checkers like [Typos](https://github.com/crate-ci/typos) and [Hunspell](https://hunspell.github.io/), grammar checkers like [Vale](https://vale.sh/) and [markdown-link-check](https://github.com/tcort/markdown-link-check), and clarity and readability analyzers like [WriteGood](https://github.com/btford/write-good) and [Hemingway Editor](http://www.hemingwayapp.com/). These exist to avoid duplicating efforts and to gauge our tool's effectiveness.
 
+## Expected Capabilities 
 
+To be considered effective, the tool should be able to:
 
-
-
-
-
-
+✅ Accept a user's input (a prompt).  
+✅ Spot and highlight weak words or vague phrases.  
+✅ Provide an improved version of the prompt.  
+✅ Handle instances when the input does not align with typical patterns.  
+✅ Disallow submission of empty input.
