@@ -1,7 +1,6 @@
 import os
 import git
 import openai
-import requests
 from dotenv import load_dotenv
 
 def load_env():
@@ -36,26 +35,22 @@ def clone_repo(repo_url, local_dir):
 
 def create_branch(repo, branch_name):
     try:
-        local_branches = [b.name for b in repo.branches]
-
-        if branch_name in local_branches:
+        if branch_name in repo.branches:
             print(f"Branch '{branch_name}' already exists. Checking out...")
             repo.git.checkout(branch_name)
             return
-        
         print(f"Creating new branch '{branch_name}' and switching to it.")
         repo.git.checkout('-b', branch_name)
-    
     except git.exc.GitCommandError as e:
         print(f"Error handling branch: {e}")
         raise
 
 def refine_markdown(md_content, openai_api_key):
     prompt = f"""
-    Convert the following Markdown content to be:
-    1. Clear in purpose
-    2. Very specific
-    3. Written in natural language
+    Improve the following README content to be:
+    1. Clear and concise
+    2. More structured and professional
+    3. Using natural and precise language
     
     Content:
     {md_content}
@@ -69,61 +64,24 @@ def refine_markdown(md_content, openai_api_key):
         messages=[{"role": "system", "content": "You are a helpful assistant."},
                   {"role": "user", "content": prompt}]
     )
-    refined_content = response.choices[0].message.content.strip()
-    print("AI Response:\n", refined_content)  # Debugging
-    return refined_content
+    return response.choices[0].message.content.strip()
 
 def update_markdown_file(repo, file_path, refined_content):
-    if not file_path.endswith("README.md"):
-        print("Error: Attempted to modify a file other than README.md")
-        return False
-    if not os.path.exists(file_path):
-        print(f"Error: Markdown file '{file_path}' does not exist.")
-        return False
-    
-    with open(file_path, "r", encoding="utf-8") as f:
-        original_content = f.read()
-    print("Original README.md Content:\n", original_content)  # Debugging
-
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(refined_content)
-    
-    with open(file_path, "r", encoding="utf-8") as f:
-        updated_content = f.read()
-    print("Updated README.md Content:\n", updated_content)  # Debugging
-
     repo.git.add(file_path)
     return True
 
 def commit_and_push(repo, branch_name, commit_message):
     try:
         if not repo.is_dirty(untracked_files=True):
-            print("No changes detected in the repository. Skipping commit.")
+            print("No changes detected in the repository.")
             return
-
         repo.git.commit('-m', commit_message)
-        origin = repo.remote(name='origin')
-        origin.push(branch_name)
-        print(f"Changes successfully pushed to '{branch_name}'")
-
-        print("Last Commit:\n", repo.git.log("-1"))
+        repo.remote(name='origin').push(branch_name)
+        print(f"Changes pushed to '{branch_name}'")
     except Exception as e:
         print(f"Error during commit/push: {e}")
-
-def create_pull_request(repo_owner, repo_name, branch_name, github_token):
-    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/pulls"
-    headers = {"Authorization": f"Bearer {github_token}", "Accept": "application/vnd.github.v3+json"}
-    data = {
-        "title": "Refined README.md Content",
-        "head": branch_name,
-        "base": "main",
-        "body": "This PR improves the README.md file for clarity, specificity, and natural language."
-    }
-    response = requests.post(url, json=data, headers=headers)
-    if response.status_code == 201:
-        print("Pull Request Created:", response.json().get("html_url"))
-    else:
-        print("Failed to create Pull Request:", response.json())
 
 if __name__ == "__main__":
     repo_url = "https://github.com/Darshan-222004/Repodarshan.git"
@@ -131,7 +89,6 @@ if __name__ == "__main__":
     
     try:
         openai_api_key, github_token = load_env()
-        
         repo_name = repo_url.split("/")[-1].replace(".git", "")
         local_dir = os.path.join(os.getcwd(), repo_name)
         repo = clone_repo(repo_url, local_dir)
@@ -141,9 +98,8 @@ if __name__ == "__main__":
             exit(1)
         
         full_md_path = os.path.join(local_dir, md_file_path)
-        
         if not os.path.exists(full_md_path):
-            print(f"Error: Markdown file '{md_file_path}' not found in the repository.")
+            print(f"Error: Markdown file '{md_file_path}' not found.")
             exit(1)
         
         with open(full_md_path, "r", encoding="utf-8") as f:
@@ -156,9 +112,5 @@ if __name__ == "__main__":
         
         if update_markdown_file(repo, full_md_path, refined_content):
             commit_and_push(repo, branch_name, "Refined README.md content")
-            
-            repo_owner = repo_url.split("/")[-2]
-            create_pull_request(repo_owner, repo_name, branch_name, github_token)
     except Exception as e:
         print(f"An error occurred: {e}")
-
