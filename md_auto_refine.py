@@ -1,7 +1,7 @@
 import os
 import git
 import openai
-import fitz  # PyMuPDF for PDF handling
+import fitz 
 from dotenv import load_dotenv
 
 def load_env():
