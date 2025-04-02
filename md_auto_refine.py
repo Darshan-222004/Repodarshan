@@ -1,7 +1,6 @@
 import os
 import git
 import openai
-import chardet
 import fitz  # PyMuPDF for PDF handling
 from dotenv import load_dotenv
 
@@ -47,18 +46,18 @@ def create_branch(repo, branch_name):
         print(f"Error handling branch: {e}")
         raise
 
-def detect_encoding(file_path):
-    with open(file_path, "rb") as f:
-        raw_data = f.read()
-    result = chardet.detect(raw_data)
-    return result["encoding"]
-
 def read_file(file_path):
     if file_path.endswith(".pdf"):
         return extract_text_from_pdf(file_path)
-    encoding = detect_encoding(file_path)
-    with open(file_path, "r", encoding=encoding, errors="ignore") as f:
-        return f.read()
+    
+    encodings = ["utf-8", "latin-1", "windows-1252"]
+    for enc in encodings:
+        try:
+            with open(file_path, "r", encoding=enc) as f:
+                return f.read()
+        except (UnicodeDecodeError, FileNotFoundError):
+            continue
+    raise ValueError("Could not read file with standard encodings")
 
 def extract_text_from_pdf(pdf_path):
     doc = fitz.open(pdf_path)
