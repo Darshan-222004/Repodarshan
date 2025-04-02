@@ -1,6 +1,9 @@
+
 import os
 import git
 import openai
+import chardet
+import fitz  # PyMuPDF for PDF handling
 from dotenv import load_dotenv
 
 def load_env():
@@ -44,6 +47,24 @@ def create_branch(repo, branch_name):
     except git.exc.GitCommandError as e:
         print(f"Error handling branch: {e}")
         raise
+
+def detect_encoding(file_path):
+    with open(file_path, "rb") as f:
+        raw_data = f.read()
+    result = chardet.detect(raw_data)
+    return result["encoding"]
+
+def read_file(file_path):
+    if file_path.endswith(".pdf"):
+        return extract_text_from_pdf(file_path)
+    encoding = detect_encoding(file_path)
+    with open(file_path, "r", encoding=encoding, errors="ignore") as f:
+        return f.read()
+
+def extract_text_from_pdf(pdf_path):
+    doc = fitz.open(pdf_path)
+    text = "\n".join(page.get_text("text") for page in doc)
+    return text.strip()
 
 def refine_content(file_content, user_instruction, openai_api_key):
     prompt = f"""
@@ -100,9 +121,7 @@ if __name__ == "__main__":
             print(f"Error: File '{file_path}' not found.")
             exit(1)
         
-        with open(full_file_path, "r", encoding="utf-8") as f:
-            file_content = f.read()
-        
+        file_content = read_file(full_file_path)
         refined_content = refine_content(file_content, user_instruction, openai_api_key)
         
         branch_name = "file_modification"
