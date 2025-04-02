@@ -1,4 +1,3 @@
-
 import os
 import git
 import openai
