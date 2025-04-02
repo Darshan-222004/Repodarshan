@@ -3,7 +3,7 @@ import git
 import openai
 import fitz 
 from dotenv import load_dotenv
-
+ 
 def load_env():
     if not os.path.exists(".env"):
         raise FileNotFoundError(".env file not found")
