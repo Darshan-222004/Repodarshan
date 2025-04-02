@@ -45,17 +45,14 @@ def create_branch(repo, branch_name):
         print(f"Error handling branch: {e}")
         raise
 
-def refine_markdown(md_content, openai_api_key):
+def refine_content(file_content, user_instruction, openai_api_key):
     prompt = f"""
-    Improve the following README content to be:
-    1. Clear and concise
-    2. More structured and professional
-    3. Using natural and precise language
+    Based on the following user instructions: {user_instruction}, modify the given content accordingly.
     
-    Content:
-    {md_content}
+    Original Content:
+    {file_content}
     
-    Refined version:
+    Modified Content:
     """
     
     client = openai.OpenAI(api_key=openai_api_key)
@@ -66,7 +63,7 @@ def refine_markdown(md_content, openai_api_key):
     )
     return response.choices[0].message.content.strip()
 
-def update_markdown_file(repo, file_path, refined_content):
+def update_file(repo, file_path, refined_content):
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(refined_content)
     repo.git.add(file_path)
@@ -84,8 +81,9 @@ def commit_and_push(repo, branch_name, commit_message):
         print(f"Error during commit/push: {e}")
 
 if __name__ == "__main__":
-    repo_url = "https://github.com/Darshan-222004/Repodarshan.git"
-    md_file_path = "README.md"
+    repo_url = input("Enter the GitHub repository URL: ")
+    file_path = input("Enter the path of the file you want to modify (relative to repo root): ")
+    user_instruction = input("Describe how you want the file to be modified: ")
     
     try:
         openai_api_key, github_token = load_env()
@@ -97,20 +95,20 @@ if __name__ == "__main__":
             print("Error: Could not clone the repository.")
             exit(1)
         
-        full_md_path = os.path.join(local_dir, md_file_path)
-        if not os.path.exists(full_md_path):
-            print(f"Error: Markdown file '{md_file_path}' not found.")
+        full_file_path = os.path.join(local_dir, file_path)
+        if not os.path.exists(full_file_path):
+            print(f"Error: File '{file_path}' not found.")
             exit(1)
         
-        with open(full_md_path, "r", encoding="utf-8") as f:
-            md_content = f.read()
+        with open(full_file_path, "r", encoding="utf-8") as f:
+            file_content = f.read()
         
-        refined_content = refine_markdown(md_content, openai_api_key)
+        refined_content = refine_content(file_content, user_instruction, openai_api_key)
         
-        branch_name = "md_refine_2"
+        branch_name = "file_modification"
         create_branch(repo, branch_name)
         
-        if update_markdown_file(repo, full_md_path, refined_content):
-            commit_and_push(repo, branch_name, "Refined README.md content")
+        if update_file(repo, full_file_path, refined_content):
+            commit_and_push(repo, branch_name, f"Updated {file_path} based on user instructions")
     except Exception as e:
         print(f"An error occurred: {e}")
