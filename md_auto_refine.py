@@ -1,131 +1,98 @@
 import os
-import git
 import openai
-import fitz 
+import git
+import requests
 from dotenv import load_dotenv
- 
-def load_env():
-    if not os.path.exists(".env"):
-        raise FileNotFoundError(".env file not found")
-    if not os.path.exists("2.env"):
-        raise FileNotFoundError("2.env file not found")
-    
-    load_dotenv(".env")  # Load OpenAI key
-    load_dotenv("2.env")  # Load GitHub token
 
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    github_token = os.getenv("GITHUB_TOKEN")
+# Load environment variables from .env or GitHub Secrets
+load_dotenv()
 
-    if not openai_api_key:
-        raise ValueError("Missing OPENAI_API_KEY environment variable")
-    if not github_token:
-        raise ValueError("Missing GITHUB_TOKEN environment variable")
+# Set these explicitly or via GitHub Secrets
+GITHUB_REPO = "Darshan-222004/Repodarshan"  # Format: username/repo
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")    # Add this in GitHub Secrets
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Add this in GitHub Secrets
 
-    return openai_api_key, github_token
+# Replace these based on your repo
+repo_url = "https://github.com/Darshan-222004/Repodarshan"
+repo_path = "."  # This assumes GitHub Actions checks out the repo root
+md_path = "README.md"  # Relative to root
+purpose = "Prompts should be in natural language, very specific, and purpose clear"
+branch_name = "file_modification"
 
-def clone_repo(repo_url, local_dir):
-    if os.path.exists(local_dir):
-        print("Repository already cloned.")
-        return git.Repo(local_dir)
-    try:
-        print(f"Cloning repository from {repo_url} to {local_dir}...")
-        return git.Repo.clone_from(repo_url, local_dir)
-    except Exception as e:
-        print(f"Error cloning repo: {e}")
-        return None
+# Initialize OpenAI client
+openai.api_key = OPENAI_API_KEY
 
-def create_branch(repo, branch_name):
-    try:
-        if branch_name in repo.branches:
-            print(f"Branch '{branch_name}' already exists. Checking out...")
-            repo.git.checkout(branch_name)
-            return
-        print(f"Creating new branch '{branch_name}' and switching to it.")
-        repo.git.checkout('-b', branch_name)
-    except git.exc.GitCommandError as e:
-        print(f"Error handling branch: {e}")
-        raise
-
-def read_file(file_path):
-    if file_path.endswith(".pdf"):
-        return extract_text_from_pdf(file_path)
-    
-    encodings = ["utf-8", "latin-1", "windows-1252"]
-    for enc in encodings:
-        try:
-            with open(file_path, "r", encoding=enc) as f:
-                return f.read()
-        except (UnicodeDecodeError, FileNotFoundError):
-            continue
-    raise ValueError("Could not read file with standard encodings")
-
-def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
-    text = "\n".join(page.get_text("text") for page in doc)
-    return text.strip()
-
-def refine_content(file_content, user_instruction, openai_api_key):
-    prompt = f"""
-    Based on the following user instructions: {user_instruction}, modify the given content accordingly.
-    
-    Original Content:
-    {file_content}
-    
-    Modified Content:
+def generate_prompt(md_content, purpose):
+    return f"""
+    The following Markdown document was written for this purpose: {purpose}
+    Improve its clarity, conciseness, and readability while preserving the original intent.
+    Ensure the prompts are in natural language, highly specific, and clearly state their purpose.
+    Maintain proper formatting, grammar, and logical flow.
+    Here is the content:
+    {md_content}
     """
-    
-    client = openai.OpenAI(api_key=openai_api_key)
-    response = client.chat.completions.create(
+
+def fetch_markdown_content(md_path):
+    with open(md_path, "r", encoding="utf-8") as file:
+        return file.read()
+
+def call_openai_api(prompt):
+    response = openai.ChatCompletion.create(
         model="gpt-4",
-        messages=[{"role": "system", "content": "You are a helpful assistant."},
-                  {"role": "user", "content": prompt}]
+        messages=[
+            {"role": "system", "content": "You are a professional technical writer."},
+            {"role": "user", "content": prompt}
+        ]
     )
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message["content"]
 
-def update_file(repo, file_path, refined_content):
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(refined_content)
-    repo.git.add(file_path)
-    return True
+def create_branch_and_update_file(repo_path, branch_name, md_path, new_content):
+    repo = git.Repo(repo_path)
+    if branch_name in repo.heads:
+        repo.git.checkout(branch_name)
+    else:
+        repo.git.checkout("-b", branch_name)
 
-def commit_and_push(repo, branch_name, commit_message):
-    try:
-        if not repo.is_dirty(untracked_files=True):
-            print("No changes detected in the repository.")
-            return
-        repo.git.commit('-m', commit_message)
-        repo.remote(name='origin').push(branch_name)
-        print(f"Changes pushed to '{branch_name}'")
-    except Exception as e:
-        print(f"Error during commit/push: {e}")
+    md_full_path = os.path.join(repo_path, md_path)
+    with open(md_full_path, "w", encoding="utf-8") as file:
+        file.write(new_content)
 
-if __name__ == "__main__":
-    repo_url = input("Enter the GitHub repository URL: ")
-    file_path = input("Enter the path of the file you want to modify (relative to repo root): ")
-    user_instruction = input("Describe how you want the file to be modified: ")
+    repo.git.add(md_path)
+    repo.git.commit(m=f"Improve {md_path} clarity and readability")
+    repo.git.push("origin", branch_name)
+
+def create_pull_request(branch_name):
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/pulls"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    payload = {
+        "title": "Improve README.md clarity",
+        "head": branch_name,
+        "base": "main",
+        "body": "This PR improves the clarity and readability of the README file."
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code == 201:
+        print(f"✅ Pull request created successfully: {response.json()['html_url']}")
+    else:
+        print(f"❌ Failed to create pull request: {response.json()}")
+
+def main():
+    print("Fetching and refining markdown...")
+    md_content = fetch_markdown_content(md_path)
+    prompt = generate_prompt(md_content, purpose)
+    improved_md = call_openai_api(prompt)
+
+    print("Creating branch and updating file...")
+    create_branch_and_update_file(repo_path, branch_name, md_path, improved_md)
     
-    try:
-        openai_api_key, github_token = load_env()
-        repo_name = repo_url.split("/")[-1].replace(".git", "")
-        local_dir = os.path.join(os.getcwd(), repo_name)
-        repo = clone_repo(repo_url, local_dir)
-        
-        if repo is None:
-            print("Error: Could not clone the repository.")
-            exit(1)
-        
-        full_file_path = os.path.join(local_dir, file_path)
-        if not os.path.exists(full_file_path):
-            print(f"Error: File '{file_path}' not found.")
-            exit(1)
-        
-        file_content = read_file(full_file_path)
-        refined_content = refine_content(file_content, user_instruction, openai_api_key)
-        
-        branch_name = "file_modification"
-        create_branch(repo, branch_name)
-        
-        if update_file(repo, full_file_path, refined_content):
-            commit_and_push(repo, branch_name, f"Updated {file_path} based on user instructions")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    print("Creating pull request...")
+    create_pull_request(branch_name)
+
+# Run the script automatically (no input)
+if __name__ == "__main__":
+    main()
