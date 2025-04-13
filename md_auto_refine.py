@@ -1,3 +1,4 @@
+import sys
 import os
 import requests
 import openai
@@ -12,6 +13,18 @@ if not API_KEY:
 
 # Initialize OpenAI client (new SDK style)
 client = openai.OpenAI(api_key=API_KEY)
+
+if len(sys.argv) != 4:
+    print("Usage: python md_auto_refine.py <repo_url> <mdfile> <purpose>")
+    sys.exit(1)
+
+repo_url = sys.argv[1]
+md_file = sys.argv[2]
+purpose = sys.argv[3]
+
+print(f"🔗 Cloning repo: {repo_url}")
+print(f"📄 Target file: {md_file}")
+print(f"🎯 Purpose: {purpose}")
 
 def fetch_markdown_file(repo_url, file_path):
     """Fetch raw markdown content from GitHub"""
@@ -58,15 +71,10 @@ def save_file(content, path):
 def main():
     print("Fetching and refining markdown...")
 
-    # Customize these
-    repo_url = "https://github.com/Darshan-222004/Repodarshan.git"
-    file_path = "README.md"
-    output_path = "README_refined.md"
-
     try:
-        original_md = fetch_markdown_file(repo_url, file_path)
+        original_md = fetch_markdown_file(repo_url, md_file)
         improved_md = call_openai_api(original_md)
-        save_file(improved_md, output_path)
+        save_file(improved_md, f"refined_{md_file}")
     except Exception as e:
         print(f"❌ Error: {e}")
 
